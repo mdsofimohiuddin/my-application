@@ -1,7 +1,4 @@
 streamlit
-pillow
-opencv-python-headless
 torch
 transformers
-moviepy
-numpy
+pillow

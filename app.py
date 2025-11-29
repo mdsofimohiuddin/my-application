@@ -3,9 +3,10 @@ from PIL import Image
 import torch
 from transformers import AutoProcessor, AutoModelForImageClassification
 
-st.title("AI Image / Video / Text Detector")
+st.set_page_config(page_title="AI Detector", page_icon="🔍", layout="centered")
+st.title("🔍 AI Image / Text Detector")
 
-# Load model once
+# ---------------------- Load Model Once ----------------------
 @st.cache_resource
 def load_model():
     processor = AutoProcessor.from_pretrained("umm-maybe/AI-image-detector")
@@ -14,27 +15,32 @@ def load_model():
 
 processor, model = load_model()
 
+# ---------------------- File Upload --------------------------
 uploaded_file = st.file_uploader(
-    "Upload Image, Text, or Video",
-    type=["png", "jpg", "jpeg", "txt", "mp4", "mov"]
+    "Upload Image or Text",
+    type=["png", "jpg", "jpeg", "txt"]
 )
 
 if uploaded_file:
-    st.success("File uploaded!")
-    st.write("File name:", uploaded_file.name)
+    st.success("File uploaded successfully!")
+    st.write("**File Name:**", uploaded_file.name)
 
-    # ------------ TEXT DETECTION ------------
+    # ---------------------- TEXT DETECTION ----------------------
     if uploaded_file.type == "text/plain":
         content = uploaded_file.read().decode("utf-8")
+        st.subheader("📄 Text Preview")
         st.write(content)
-        
-        # simple text detection placeholder
+
+        # Placeholder text detection (you can improve later)
+        st.subheader("🔍 Detection Result")
         st.json({"label": "Real", "score": 0.90})
 
-    # ------------ IMAGE DETECTION (REAL) ------------
+    # ---------------------- IMAGE DETECTION ---------------------
     elif uploaded_file.type.startswith("image/"):
         image = Image.open(uploaded_file)
-        st.image(image, caption="Uploaded Image", use_column_width=True)
+
+        st.subheader("🖼️ Uploaded Image")
+        st.image(image, use_column_width=True)
 
         inputs = processor(images=image, return_tensors="pt")
         with torch.no_grad():
@@ -44,13 +50,14 @@ if uploaded_file:
         real_score = float(scores[0])
         ai_score = float(scores[1])
 
+        st.subheader("🔍 Detection Result")
         st.json({
             "label": "AI Generated" if ai_score > real_score else "Real",
             "ai_score": ai_score,
             "real_score": real_score
         })
 
-    # ------------ VIDEO (PLACEHOLDER) ------------
-    elif uploaded_file.type.startswith("video/"):
-        st.video(uploaded_file)
-        st.json({"label": "Real", "score": 0.6})
+else:
+    st.info("Upload a PNG, JPG, JPEG, or TXT file to begin detection.")
+
+
